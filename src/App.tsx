@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import MovieCard from "./MovieCard";
 import "./App.css";
 
 type Movie = {
-  id: string;
+  id: number;
   original_title: string;
   poster_path: string;
   overview: string;
@@ -10,14 +11,14 @@ type Movie = {
 
 type MovieJson = {
   adult: boolean;
-  backdrop_path: string | null;
+  backdrop_path: string;
   genre_ids: number[];
-  id: string;
+  id: number;
   original_language: string;
   original_title: string;
   overview: string;
   popularity: number;
-  poster_path: string | null;
+  poster_path: string;
   release_date: string;
   title: string;
   video: boolean;
@@ -26,12 +27,13 @@ type MovieJson = {
 };
 
 function App() {
-  // 修正
   const fetchMovieList = async () => {
     const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
     let url = "";
     if (keyword) {
-      url = `https://api.themoviedb.org/3/search/movie?query=${keyword}&include_adult=false&language=ja&page=1`;
+      url = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(
+        keyword
+      )}&include_adult=false&language=ja&page=1`;
     } else {
       url = "https://api.themoviedb.org/3/movie/popular?language=ja&page=1";
     }
@@ -55,24 +57,62 @@ function App() {
 
   useEffect(() => {
     fetchMovieList();
-  }, [keyword]); // 修正
+  }, [keyword]);
+
+  // HeroSection用のダミーデータ（君の名は）
+  const heroTitle = "君の名は";
+  const heroYear = 2016;
+  const heroOverview =
+    "1ヵ月後に1000年ぶりの彗星が訪れる日本。東京で暮らす平凡な男子高校生・瀧と、山深い村で都会の生活に憧れながら憂鬱な日々を送る女子高校生・三葉。つながりのない2人は、互いが入れ替わる不思議な夢を見る。";
+  const heroImage =
+    "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/yLglTwyFOUZt5fNKm0PWL1PK5gm.jpg";
 
   return (
     <div>
-      <div>{keyword}</div>
-      <input type="text" onChange={(e) => setKeyword(e.target.value)} />
-      {movieList
-        .filter((movie) => movie.original_title.includes(keyword))
-        .map((movie) => (
-          <div key={movie.id}>
-            <h2>{movie.original_title}</h2>
-            <img
-              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-              alt={movie.original_title}
-            />
-            <p>{movie.overview}</p>
+      <section className="hero-section">
+        {heroImage && (
+          <>
+            <img className="hero-section-bg" src={heroImage} alt={heroTitle} />
+            <div className="hero-section-gradient" />
+          </>
+        )}
+        <div className="hero-section-content">
+          <h1 className="hero-section-title">{heroTitle}</h1>
+          <div className="hero-section-badges">
+            <span className="hero-section-badge">{heroYear}</span>
           </div>
-        ))}
+          {heroOverview && (
+            <div className="hero-section-overview">{heroOverview}</div>
+          )}
+          <div className="hero-section-actions">
+            <button className="hero-section-btn hero-section-btn-primary">
+              ▶ Play
+            </button>
+            <button className="hero-section-btn hero-section-btn-secondary">
+              More Info
+            </button>
+          </div>
+        </div>
+      </section>
+      <section className="movie-row-section">
+        <h2 className="movie-row-title">
+          {keyword ? `「${keyword}」の検索結果` : "人気映画"}
+        </h2>
+        <div className="movie-row-scroll">
+          {movieList.map((movie) => (
+            <MovieCard key={movie.id} movie={movie} />
+          ))}
+        </div>
+      </section>
+      <div className="app-search-wrap">
+        <input
+          type="text"
+          className="app-search"
+          placeholder="映画タイトルで検索..."
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+        />
+      </div>
     </div>
   );
 }
